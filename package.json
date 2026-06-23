@@ -1,0 +1,24 @@
+{
+  "name": "08---js-a-linguagem",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Passarin1/08---JS-A-Linguagem.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Passarin1/08---JS-A-Linguagem/issues"
+  },
+  "homepage": "https://github.com/Passarin1/08---JS-A-Linguagem#readme",
+  "dependencies": {
+    "readline-sync": "^1.4.10"
+  }
+}
