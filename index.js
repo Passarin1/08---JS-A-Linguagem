@@ -43,45 +43,29 @@ const categorias = {
 
 const forca = [
 `
- +---+
- |   |
+ +---+  |   |
      |
      |
-     |
-     |
-=========`,
+     |      | =========`,
 `
- +---+
- |   |
+ +---+  |   |
  O   |
      |
-     |
-     |
-=========`,
+     |      | =========`,
 `
- +---+
- |   |
- O   |
- |   |
-     |
-     |
-=========`,
+ +---+  |   |
+ O   |  |   |
+     |      | =========`,
 `
- +---+
- |   |
+ +---+  |   |
  O   |
 /|\\  |
-     |
-     |
-=========`,
+     |      | =========`,
 `
- +---+
- |   |
+ +---+  |   |
  O   |
 /|\\  |
-/ \\  |
-     |
-=========`
+/ \\  |      | =========`
 ];
 
 // ======================
@@ -104,7 +88,6 @@ function venceu(palavra, corretas) {
 // ======================
 
 function salvarRanking(nome, pontos, modo) {
-
     const arquivo =
         modo === 2 ? "ranking-mp.json" : "ranking-solo.json";
 
@@ -124,7 +107,6 @@ function salvarRanking(nome, pontos, modo) {
 }
 
 function mostrarRanking() {
-
     console.log("\n===== RANKING SOLO =====");
 
     try {
@@ -149,11 +131,10 @@ function mostrarRanking() {
 }
 
 // ======================
-// PARTIDA (ENGINE)
+// ENGINE DO JOGO
 // ======================
 
 function rodarPartida(jogador, palavra, dica) {
-
     let corretas = [];
     let tentadas = [];
     let erros = 0;
@@ -163,7 +144,6 @@ function rodarPartida(jogador, palavra, dica) {
     let dicaUsada = false;
 
     while (erros < maxErros) {
-
         console.clear();
 
         console.log(`Jogador: ${jogador}`);
@@ -186,7 +166,6 @@ function rodarPartida(jogador, palavra, dica) {
         }
 
         if (input.length > 1) {
-
             if (input === palavra) {
                 pontos += 50;
                 corretas = [...new Set(palavra.split(""))];
@@ -198,7 +177,6 @@ function rodarPartida(jogador, palavra, dica) {
         }
 
         if (!/^[A-Z]$/.test(input)) continue;
-
         if (tentadas.includes(input)) continue;
 
         tentadas.push(input);
@@ -224,7 +202,6 @@ function rodarPartida(jogador, palavra, dica) {
 // ======================
 
 function jogar() {
-
     console.clear();
     console.log("=== JOGO DA FORCA ===");
 
@@ -238,21 +215,23 @@ function jogar() {
 
     const cats = Object.keys(categorias);
 
+    console.log("\nEscolha a categoria:");
     cats.forEach((c, i) => {
         console.log(`${i + 1} - ${c}`);
     });
 
+    console.log(`${cats.length + 1} - Personalizado (Duelo)`);
+
     let escolha;
     do {
         escolha = Number(readline.question("Categoria: "));
-    } while (escolha < 1 || escolha > cats.length);
-
-    const categoria = cats[escolha - 1];
+    } while (escolha < 1 || escolha > cats.length + 1);
 
     // ======================
     // SOLO
     // ======================
     if (modo === 1) {
+        const categoria = cats[escolha - 1];
 
         const palavraObj =
             categorias[categoria][Math.floor(Math.random() * categorias[categoria].length)];
@@ -270,31 +249,36 @@ function jogar() {
     }
 
     // ======================
-    // 2 JOGADORES (RODADA INVERTIDA)
+    // DUO
     // ======================
 
     const jogador2 = readline.question("\nNome Jogador 2: ");
 
-    console.clear();
-    console.log("⚔️ DUEL MODE INICIADO");
+    let palavra1, dica1;
 
-    // Jogador 1 cria palavra
-    console.log(`\n${jogador1}, crie a palavra para ${jogador2}`);
-    const palavra1 = readline.question("> ").toUpperCase();
-    const dica1 = readline.question("Dica: ");
+    if (escolha === cats.length + 1) {
+        console.log(`\n${jogador1}, modo personalizado ativado`);
+        palavra1 = readline.question("Digite a palavra secreta: ").toUpperCase();
+        dica1 = readline.question("Digite a dica: ");
+    } else {
+        const categoria = cats[escolha - 1];
+
+        const palavraObj =
+            categorias[categoria][Math.floor(Math.random() * categorias[categoria].length)];
+
+        palavra1 = palavraObj.palavra;
+        dica1 = palavraObj.dica;
+
+        console.log(`\nCategoria escolhida: ${categoria}`);
+    }
 
     const pontos2 = rodarPartida(jogador2, palavra1, dica1);
 
-    // Jogador 2 cria palavra
     console.log(`\n${jogador2}, agora crie a palavra para ${jogador1}`);
     const palavra2 = readline.question("> ").toUpperCase();
     const dica2 = readline.question("Dica: ");
 
     const pontos1 = rodarPartida(jogador1, palavra2, dica2);
-
-    // ======================
-    // RESULTADO FINAL
-    // ======================
 
     console.clear();
     console.log("🏁 RESULTADO FINAL");
@@ -313,7 +297,7 @@ function jogar() {
 }
 
 // ======================
-// LOOP
+// LOOP PRINCIPAL
 // ======================
 
 while (true) {
