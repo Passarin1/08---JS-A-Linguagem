@@ -99,64 +99,60 @@ function venceu(palavra, corretas) {
     return palavra.split("").every(l => corretas.includes(l));
 }
 
-function salvarRanking(nome, pontos) {
+// ======================
+// RANKING
+// ======================
+
+function salvarRanking(nome, pontos, modo) {
+
+    const arquivo =
+        modo === 2 ? "ranking-mp.json" : "ranking-solo.json";
+
     let ranking = [];
 
     try {
-        ranking = JSON.parse(fs.readFileSync("ranking.json"));
-    } catch {}
+        ranking = JSON.parse(fs.readFileSync(arquivo));
+    } catch {
+        ranking = [];
+    }
 
     ranking.push({ nome, pontos });
 
     ranking.sort((a, b) => b.pontos - a.pontos);
 
-    fs.writeFileSync("ranking.json", JSON.stringify(ranking, null, 2));
+    fs.writeFileSync(arquivo, JSON.stringify(ranking, null, 2));
 }
 
 function mostrarRanking() {
+
+    console.log("\n===== RANKING SOLO =====");
+
     try {
-        const ranking = JSON.parse(fs.readFileSync("ranking.json"));
-
-        console.log("\n===== RANKING =====");
-
-        ranking.slice(0, 10).forEach((j, i) => {
+        const solo = JSON.parse(fs.readFileSync("ranking-solo.json"));
+        solo.slice(0, 5).forEach((j, i) => {
             console.log(`${i + 1}. ${j.nome} - ${j.pontos}`);
         });
-
     } catch {
-        console.log("\nSem ranking ainda.");
+        console.log("Sem ranking solo ainda.");
+    }
+
+    console.log("\n===== RANKING MULTIPLAYER =====");
+
+    try {
+        const mp = JSON.parse(fs.readFileSync("ranking-mp.json"));
+        mp.slice(0, 5).forEach((j, i) => {
+            console.log(`${i + 1}. ${j.nome} - ${j.pontos}`);
+        });
+    } catch {
+        console.log("Sem ranking multiplayer ainda.");
     }
 }
 
 // ======================
-// JOGO
+// PARTIDA (ENGINE)
 // ======================
 
-function jogar() {
-
-    console.clear();
-    console.log("=== JOGO DA FORCA ===");
-
-    const nome = readline.question("Nome: ");
-
-    const cats = Object.keys(categorias);
-
-    cats.forEach((c, i) => {
-        console.log(`${i + 1} - ${c}`);
-    });
-
-    let escolha;
-    do {
-        escolha = Number(readline.question("Categoria: "));
-    } while (escolha < 1 || escolha > cats.length);
-
-    const categoria = cats[escolha - 1];
-
-    const palavraObj =
-        categorias[categoria][Math.floor(Math.random() * categorias[categoria].length)];
-
-    const palavra = palavraObj.palavra;
-    const dica = palavraObj.dica;
+function rodarPartida(jogador, palavra, dica) {
 
     let corretas = [];
     let tentadas = [];
@@ -170,8 +166,7 @@ function jogar() {
 
         console.clear();
 
-        console.log(`Jogador: ${nome}`);
-        console.log(`Categoria: ${categoria}`);
+        console.log(`Jogador: ${jogador}`);
         console.log(forca[erros]);
 
         console.log("\nPalavra:", mostrarPalavra(palavra, corretas));
@@ -180,47 +175,31 @@ function jogar() {
 
         const input = readline.question("> ").toUpperCase().trim();
 
-        // DICA
         if (input === "DICA") {
             if (!dicaUsada) {
                 console.log("\nDica:", dica);
                 dicaUsada = true;
                 pontos -= 20;
-            } else {
-                console.log("\nDica já usada.");
             }
             readline.question("");
             continue;
         }
 
-        // PALAVRA INTEIRA
         if (input.length > 1) {
 
             if (input === palavra) {
-                console.log("\nAcertou a palavra!");
                 pontos += 50;
                 corretas = [...new Set(palavra.split(""))];
                 break;
             } else {
-                console.log("\nErrado!");
                 erros++;
-                readline.question("");
                 continue;
             }
         }
 
-        // LETRA
-        if (!/^[A-Z]$/.test(input)) {
-            console.log("\nDigite apenas UMA letra.");
-            readline.question("");
-            continue;
-        }
+        if (!/^[A-Z]$/.test(input)) continue;
 
-        if (tentadas.includes(input)) {
-            console.log("\nLetra repetida.");
-            readline.question("");
-            continue;
-        }
+        if (tentadas.includes(input)) continue;
 
         tentadas.push(input);
 
@@ -237,18 +216,99 @@ function jogar() {
         }
     }
 
-    console.clear();
+    return pontos;
+}
 
-    if (venceu(palavra, corretas)) {
-        console.log("🎉 VOCÊ VENCEU!");
-    } else {
-        console.log("💀 VOCÊ PERDEU!");
+// ======================
+// JOGO PRINCIPAL
+// ======================
+
+function jogar() {
+
+    console.clear();
+    console.log("=== JOGO DA FORCA ===");
+
+    console.log("\nModo de jogo:");
+    console.log("1 - Solo");
+    console.log("2 - 2 Jogadores (Duelo)");
+
+    const modo = Number(readline.question("Escolha: "));
+
+    const jogador1 = readline.question("\nNome Jogador 1: ");
+
+    const cats = Object.keys(categorias);
+
+    cats.forEach((c, i) => {
+        console.log(`${i + 1} - ${c}`);
+    });
+
+    let escolha;
+    do {
+        escolha = Number(readline.question("Categoria: "));
+    } while (escolha < 1 || escolha > cats.length);
+
+    const categoria = cats[escolha - 1];
+
+    // ======================
+    // SOLO
+    // ======================
+    if (modo === 1) {
+
+        const palavraObj =
+            categorias[categoria][Math.floor(Math.random() * categorias[categoria].length)];
+
+        const pontos = rodarPartida(jogador1, palavraObj.palavra, palavraObj.dica);
+
+        console.clear();
+        console.log("🎮 FIM DA PARTIDA");
+        console.log("Pontos:", pontos);
+
+        salvarRanking(jogador1, pontos, 1);
+        mostrarRanking();
+
+        return;
     }
 
-    console.log("Palavra:", palavra);
-    console.log("Pontos:", pontos);
+    // ======================
+    // 2 JOGADORES (RODADA INVERTIDA)
+    // ======================
 
-    salvarRanking(nome, pontos);
+    const jogador2 = readline.question("\nNome Jogador 2: ");
+
+    console.clear();
+    console.log("⚔️ DUEL MODE INICIADO");
+
+    // Jogador 1 cria palavra
+    console.log(`\n${jogador1}, crie a palavra para ${jogador2}`);
+    const palavra1 = readline.question("> ").toUpperCase();
+    const dica1 = readline.question("Dica: ");
+
+    const pontos2 = rodarPartida(jogador2, palavra1, dica1);
+
+    // Jogador 2 cria palavra
+    console.log(`\n${jogador2}, agora crie a palavra para ${jogador1}`);
+    const palavra2 = readline.question("> ").toUpperCase();
+    const dica2 = readline.question("Dica: ");
+
+    const pontos1 = rodarPartida(jogador1, palavra2, dica2);
+
+    // ======================
+    // RESULTADO FINAL
+    // ======================
+
+    console.clear();
+    console.log("🏁 RESULTADO FINAL");
+
+    console.log(`${jogador1}: ${pontos1} pontos`);
+    console.log(`${jogador2}: ${pontos2} pontos`);
+
+    if (pontos1 > pontos2) console.log(`🏆 Vencedor: ${jogador1}`);
+    else if (pontos2 > pontos1) console.log(`🏆 Vencedor: ${jogador2}`);
+    else console.log("🤝 Empate!");
+
+    salvarRanking(jogador1, pontos1, 2);
+    salvarRanking(jogador2, pontos2, 2);
+
     mostrarRanking();
 }
 

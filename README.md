@@ -1,6 +1,61 @@
 # 08---JS-A-Linguagem
 
-Criado por luis he
+Criado por **Luís henrique rodrigues silva**
+**3° periodo de bsi**
+
+## Visão Geral
+
+Este projeto implementa um **Jogo da Forca interativo no terminal**, desenvolvido em **JavaScript (Node.js)**.
+
+O objetivo é aplicar lógica de programação, manipulação de entrada via terminal, estruturas condicionais, arrays, funções e persistência de dados com arquivos JSON.
+
+O sistema inclui:
+- Modo solo contra o sistema
+- Modo duelo entre dois jogadores
+- Sistema de pontuação
+- Ranking persistente
+- Banco de palavras por categorias
+
+---
+
+## Funcionalidades
+
+### Modo Solo
+- Palavra aleatória por categoria
+- Jogador tenta adivinhar letras
+- Sistema de pontuação por desempenho
+- Registro no ranking solo
+
+---
+
+### Modo Duelo (2 Jogadores)
+- Jogador 1 define uma palavra e uma dica
+- Jogador 2 tenta adivinhar
+- Depois os papéis são invertidos
+- Pontuação final é somada
+- Vencedor definido pelo maior score
+
+---
+
+### Sistema de Pontuação
+
+- ✔️ +10 pontos por letra correta
+- ✔️ +50 pontos por palavra completa
+- ✔️ Bônus por tentativas restantes
+- ❌ -20 pontos ao usar dica
+
+---
+
+### Ranking Persistente
+
+Os resultados são salvos automaticamente em arquivos JSON:
+
+- `ranking-solo.json` → modo solo  
+- `ranking-mp.json` → modo duelo  
+
+Ordenado por maior pontuação.
+
+---
 
 ## Regras do jogo
 
